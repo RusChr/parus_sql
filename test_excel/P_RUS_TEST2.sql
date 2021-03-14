@@ -1,0 +1,46 @@
+CREATE OR REPLACE PROCEDURE P_RUS_TEST2(NCOMPANY IN NUMBER) AS
+	/* константы листа */
+	SHEET_NAME   CONSTANT PKG_STD.TSTRING := 'Лист1'; -- Имя листа-шаблона
+	CELL_COMPANY CONSTANT PKG_STD.TSTRING := 'organiz'; -- Наименование организации
+	-- Строки
+	HEADER1      CONSTANT PKG_STD.TSTRING := 'rus_header';
+	AGN          CONSTANT PKG_STD.TSTRING := 'rus_agents'; -- Контрагенты
+	AGNABBR      CONSTANT PKG_STD.TSTRING := 'rus_agent_code'; -- Мнемокод контрагента
+	AGNNAME      CONSTANT PKG_STD.TSTRING := 'rus_agent_name'; -- Наименование контрагента
+	/* переменные */
+	SCOMPANY     VARCHAR2(100);
+	ILINE_INDEX  INTEGER;
+BEGIN
+	SCOMPANY := GET_COMPANY_FULLNAME(0, NCOMPANY);
+	/* пролог */
+	PRSG_EXCEL.PREPARE;
+	/* установка текущего рабочего листа */
+	PRSG_EXCEL.SHEET_SELECT(SHEET_NAME);
+	/* описание */
+	PRSG_EXCEL.CELL_DESCRIBE(CELL_COMPANY);
+
+	PRSG_EXCEL.LINE_DESCRIBE(HEADER1);
+	PRSG_EXCEL.LINE_DESCRIBE(AGN);
+	PRSG_EXCEL.LINE_CELL_DESCRIBE(AGN, AGNABBR);
+	PRSG_EXCEL.LINE_CELL_DESCRIBE(AGN, AGNNAME);
+
+	/* запись значений */
+	PRSG_EXCEL.CELL_VALUE_WRITE(CELL_COMPANY, SCOMPANY);
+
+	FOR TREC IN (SELECT AGNABBR
+										 ,AGNNAME
+								 FROM V_AGNLIST
+								WHERE ROWNUM < 50) LOOP
+	
+		/* добавление строки контрагента */
+		ILINE_INDEX := PRSG_EXCEL.LINE_CONTINUE(AGN);
+	
+		/* запись значений */
+		PRSG_EXCEL.CELL_VALUE_WRITE(AGNABBR, 0, ILINE_INDEX, TREC.AGNABBR);
+		PRSG_EXCEL.CELL_VALUE_WRITE(AGNNAME, 0, ILINE_INDEX, TREC.AGNNAME);
+	
+	END LOOP;
+
+	PRSG_EXCEL.LINE_DELETE(AGN);
+
+END;
