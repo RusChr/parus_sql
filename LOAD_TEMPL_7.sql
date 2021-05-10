@@ -67,6 +67,7 @@ SELECT T.BOOK_NUMB
       ,T.SQUARE_ALL             SQUARE_ALL
       ,T.HABI_PART_STR          HABI_PART_STR
       ,T.HOUSING
+      ,T.HABI_TAX_NAME
 
 
   FROM (SELECT ACC.RN                 ACC_RN
@@ -150,6 +151,7 @@ SELECT T.BOOK_NUMB
               ,(SELECT MH.SQUARE_ALL FROM MSUHABI MH WHERE MH.RN = LHM.HPRN)                             SQUARE_ALL
               ,LHM.HABI_PART_STR                                                                         HABI_PART_STR
               ,NULL                                                                                      HOUSING
+              ,HABITAX.NAME                                                                              HABI_TAX_NAME
 
 
           FROM MSUACC     ACC
@@ -227,10 +229,23 @@ SELECT T.BOOK_NUMB
                         WHERE ACCM.MEMB = MEMB.RN
                       ) MEMBS ON NVL(LAND.PRN, HABI.PRN) = MEMBS.PRN AND NVL(LAND.AGENT, HABI.AGENT) = MEMBS.AGENT
                ) LHM
+              
+              ,(SELECT DISTINCT 
+                       HTAX.PRN       TPRN
+                      ,HTAXD.AGENT
+                      ,TAXC.NAME
+                  FROM MSUTAXCTGR     TAXC
+                      ,MSUHABITAXDET  HTAXD
+                      ,MSUHABITAX     HTAX
+                 WHERE TAXC.RN = HTAXD.TAXCTGR
+                   AND HTAXD.PRN = HTAX.RN
+               ) HABITAX
                              
           
          WHERE ACC.BOOK = BOOK.RN
            AND ACC.RN = LHM.PRN(+)
+           AND LHM.HABI_AGENT = HABITAX.AGENT(+)
+           AND LHM.HPRN = HABITAX.TPRN(+)
            --AND ACC.RN IN (22600075, 22600103, 22600763, 22596839)
            AND ACC.CRN = 22596750) T
 
