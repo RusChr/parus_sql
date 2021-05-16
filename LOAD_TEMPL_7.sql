@@ -1,5 +1,6 @@
 SELECT T.BOOK_NUMB
       ,T.ACC_NUMB
+      ,T.MSU
       ,DECODE(T.ROW_NUM, 1, T.ADDR_TYPE, NULL) ADDR_TYPE
       ,DECODE(T.ROW_NUM, 1, T.STREET, NULL)    STREET
       ,DECODE(T.ROW_NUM, 1, T.HOUSE, NULL)     HOUSE
@@ -72,6 +73,7 @@ SELECT T.BOOK_NUMB
 
   FROM (SELECT ACC.RN                 ACC_RN
               ,LHM.PRN                LHM_PRN
+              ,BOOK.MSU               MSU
               ,LHM.LAND_AGENT         LAND_AGENT
               ,LHM.HABI_AGENT         HABI_AGENT
               ,LHM.MEMBS_AGENT        MEMBS_AGENT
@@ -247,7 +249,8 @@ SELECT T.BOOK_NUMB
            AND LHM.HABI_AGENT = HABITAX.AGENT(+)
            AND LHM.HPRN = HABITAX.TPRN(+)
            --AND ACC.RN IN (22600075, 22600103, 22600763, 22596839)
-           AND ACC.CRN = 22596750) T
+           --AND ACC.CRN = 22596750
+           AND BOOK.MSU = 14862450) T
 
  ORDER BY 1
          ,2
